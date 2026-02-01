@@ -28,6 +28,8 @@ interface FeaturesContextType {
   isLoaded: boolean;
   velocity: number;
   setVelocity: (velocity: number) => void;
+  loadedFromShare: boolean;
+  clearShareState: () => void;
 }
 
 const FeaturesContext = createContext<FeaturesContextType | undefined>(undefined);
@@ -127,6 +129,7 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [velocity, setVelocityState] = useState<number>(DEFAULT_VELOCITY);
+  const [loadedFromShare, setLoadedFromShare] = useState(false);
 
   // Load features and velocity from URL state or localStorage on mount
   useEffect(() => {
@@ -140,20 +143,26 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
         if (!/^[A-Za-z0-9+/=]+$/.test(encodedState)) {
           throw new Error("Invalid base64 string");
         }
-        // Decode and parse URL state
-        const jsonString = atob(encodedState);
+        // Decode and parse URL state (handle Unicode properly)
+        const jsonString = decodeURIComponent(escape(atob(encodedState)));
         const sharedState = JSON.parse(jsonString);
         
         if (sharedState.features && Array.isArray(sharedState.features)) {
           setFeatures(sharedState.features);
           // Also save to localStorage so it persists
           localStorage.setItem(STORAGE_KEY, JSON.stringify(sharedState.features));
+          setLoadedFromShare(true);
         }
         
         if (sharedState.velocity && typeof sharedState.velocity === "number" && sharedState.velocity > 0) {
           setVelocityState(sharedState.velocity);
           localStorage.setItem(VELOCITY_STORAGE_KEY, sharedState.velocity.toString());
         }
+        
+        // Clean up URL after loading (remove state param)
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("state");
+        window.history.replaceState({}, "", cleanUrl.toString());
         
         setIsLoaded(true);
         return;
@@ -231,6 +240,10 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const clearShareState = () => {
+    setLoadedFromShare(false);
+  };
+
   const updateFeature = (id: string, updates: Partial<Feature>) => {
     setFeatures((prev) =>
       prev.map((feature) => {
@@ -259,7 +272,7 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
 
   return (
     <FeaturesContext.Provider
-      value={{ features, setFeatures, addFeature, deleteFeature, updateFeature, isLoaded, velocity, setVelocity }}
+      value={{ features, setFeatures, addFeature, deleteFeature, updateFeature, isLoaded, velocity, setVelocity, loadedFromShare, clearShareState }}
     >
       {children}
     </FeaturesContext.Provider>

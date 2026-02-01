@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Presentation, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,8 +18,19 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   const { isCEOMode, toggleCEOMode } = useCEOMode();
-  const { features, velocity } = useFeatures();
+  const { features, velocity, loadedFromShare, clearShareState } = useFeatures();
   const { toast } = useToast();
+
+  // Show toast when loaded from shared link
+  React.useEffect(() => {
+    if (loadedFromShare) {
+      toast({
+        title: "Shared Roadmap Loaded",
+        description: `Loaded ${features.length} features from shared link.`,
+      });
+      clearShareState();
+    }
+  }, [loadedFromShare, features.length, toast, clearShareState]);
 
   const handleShare = async () => {
     try {
@@ -28,12 +40,12 @@ export function Header({ title, subtitle }: HeaderProps) {
         velocity,
       };
       
-      // Encode to Base64
+      // Encode to Base64 (handle Unicode properly)
       const jsonString = JSON.stringify(shareableState);
-      const encoded = btoa(jsonString);
+      const encoded = btoa(unescape(encodeURIComponent(jsonString)));
       
-      // Update URL
-      const url = new URL(window.location.href);
+      // Update URL without the pathname to keep it clean
+      const url = new URL(window.location.origin + "/dashboard");
       url.searchParams.set("state", encoded);
       window.history.replaceState({}, "", url.toString());
       
@@ -42,14 +54,34 @@ export function Header({ title, subtitle }: HeaderProps) {
       
       toast({
         title: "Link Copied!",
-        description: "Share this link with your team to share your roadmap configuration.",
+        description: `Sharing ${features.length} features. Send this link to your team.`,
       });
-    } catch {
-      toast({
-        title: "Failed to copy",
-        description: "Please try again or manually copy the URL.",
-        variant: "destructive",
-      });
+    } catch (error) {
+      // Fallback: try to copy using older method
+      try {
+        const jsonString = JSON.stringify({ features, velocity });
+        const encoded = btoa(unescape(encodeURIComponent(jsonString)));
+        const url = new URL(window.location.origin + "/dashboard");
+        url.searchParams.set("state", encoded);
+        
+        const textArea = document.createElement("textarea");
+        textArea.value = url.toString();
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        
+        toast({
+          title: "Link Copied!",
+          description: `Sharing ${features.length} features. Send this link to your team.`,
+        });
+      } catch {
+        toast({
+          title: "Failed to copy",
+          description: "Please try again or manually copy the URL from the address bar.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
