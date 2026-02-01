@@ -21,7 +21,7 @@ function AnimatedShape({
   );
 }
 
-export default function HeroScene() {
+export function HeroScene() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

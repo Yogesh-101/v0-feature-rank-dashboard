@@ -15,7 +15,11 @@ import {
   Target,
   Sparkles
 } from "lucide-react";
-import HeroScene from "@/components/landing/hero-scene"; // Import HeroScene
+
+const HeroScene = dynamic(
+  () => import("@/components/landing/hero-scene").then((mod) => mod.HeroScene),
+  { ssr: false }
+);
 
 const LiquidEther = dynamic(
   () => import("@/components/landing/liquid-ether"),
@@ -59,23 +63,11 @@ export function LandingContent() {
     <div className="relative min-h-screen overflow-hidden bg-background">
       {/* Hero Section */}
       <section className="relative flex min-h-screen flex-col items-center justify-center px-4">
-        {/* Liquid Ether Background */}
-        <div className="absolute inset-0 -z-10">
-          <LiquidEther
-            colors={["#14b8a6", "#0d9488", "#0f766e", "#134e4a"]}
-            mouseForce={15}
-            cursorSize={120}
-            resolution={0.5}
-            autoDemo={true}
-            autoSpeed={0.3}
-            autoIntensity={1.8}
-            className="h-full w-full"
-          />
-        </div>
+        <HeroScene />
         
         {/* Gradient overlays */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background))_80%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background))_70%)]" />
         
         {/* Navigation */}
         <nav className="absolute left-0 right-0 top-0 z-50 flex items-center justify-between px-6 py-4 md:px-12">
