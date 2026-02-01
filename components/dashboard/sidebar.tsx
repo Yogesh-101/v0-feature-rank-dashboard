@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Home, Layers, Settings, BarChart3, Menu, X } from "lucide-react";
+import { Home, Layers, Settings, BarChart3, Menu, X, LineChart, GitCompare, Presentation, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +10,10 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { icon: Home, label: "Dashboard", href: "/dashboard" },
   { icon: Layers, label: "Backlog", href: "/backlog" },
+  { icon: LineChart, label: "Analytics", href: "/analytics" },
+  { icon: GitCompare, label: "Scenarios", href: "/scenarios" },
+  { icon: Users, label: "Team Views", href: "/team-views" },
+  { icon: Presentation, label: "Presentation", href: "/presentation" },
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 

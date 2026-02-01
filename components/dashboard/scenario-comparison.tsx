@@ -24,6 +24,7 @@ interface ScenarioFeature extends Feature {
 
 interface ScenarioComparisonProps {
   onClose: () => void;
+  showBackButton?: boolean;
 }
 
 function calculateRiceScore(reach: number, impact: number, confidence: number, effort: number): number {
@@ -256,7 +257,7 @@ function ScenarioColumn({
   );
 }
 
-export function ScenarioComparison({ onClose }: ScenarioComparisonProps) {
+export function ScenarioComparison({ onClose, showBackButton = true }: ScenarioComparisonProps) {
   const { features, isLoaded } = useFeatures();
 
   // Scenario B modifications stored as a map of id -> { impact, effort }
@@ -328,10 +329,12 @@ export function ScenarioComparison({ onClose }: ScenarioComparisonProps) {
             Modify Scenario B to compare different prioritization strategies
           </p>
         </div>
-        <Button variant="outline" onClick={onClose} className="gap-2 bg-transparent">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
+        {showBackButton && (
+          <Button variant="outline" onClick={onClose} className="gap-2 bg-transparent">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        )}
       </div>
 
       {/* Comparison Summary */}
