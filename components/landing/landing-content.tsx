@@ -21,11 +21,6 @@ const HeroScene = dynamic(
   { ssr: false }
 );
 
-const LiquidEther = dynamic(
-  () => import("@/components/landing/liquid-ether"),
-  { ssr: false }
-);
-
 const features = [
   {
     icon: Target,
