@@ -219,6 +219,7 @@ interface SharedFeaturesTableProps {
   showStatus?: boolean;
   title?: string;
   description?: string;
+  defaultViewMode?: ViewMode;
 }
 
 export function SharedFeaturesTable({
@@ -226,13 +227,14 @@ export function SharedFeaturesTable({
   showStatus = false,
   title = "Feature Backlog",
   description,
+  defaultViewMode = "standard",
 }: SharedFeaturesTableProps) {
   const { features, addFeature, deleteFeature, updateFeature, isLoaded, velocity } =
     useFeatures();
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [viewMode, setViewMode] = useState<ViewMode>("standard");
+  const [viewMode, setViewMode] = useState<ViewMode>(defaultViewMode);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

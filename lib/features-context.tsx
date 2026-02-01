@@ -136,6 +136,10 @@ export function FeaturesProvider({ children }: { children: ReactNode }) {
     
     if (encodedState) {
       try {
+        // Validate base64 string before decoding
+        if (!/^[A-Za-z0-9+/=]+$/.test(encodedState)) {
+          throw new Error("Invalid base64 string");
+        }
         // Decode and parse URL state
         const jsonString = atob(encodedState);
         const sharedState = JSON.parse(jsonString);
