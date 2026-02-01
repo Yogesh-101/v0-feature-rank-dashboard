@@ -1,161 +1,99 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
-import { useRef, useState, useEffect, Suspense } from "react";
-import type * as THREE from "three";
+import { useEffect, useState } from "react";
 
-// Simple animated cube
-function AnimatedCube({
-  position,
-  color,
-  scale = 1,
+// Animated CSS-only background with floating shapes
+function AnimatedShape({
+  className,
+  delay = 0,
 }: {
-  position: [number, number, number];
-  color: string;
-  scale?: number;
+  className: string;
+  delay?: number;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.2;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
-    }
-  });
-
   return (
-    <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.5}>
-      <mesh ref={meshRef} position={position} scale={scale}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial
-          color={color}
-          transparent
-          opacity={0.6}
-          roughness={0.3}
-          metalness={0.1}
-        />
-      </mesh>
-    </Float>
-  );
-}
-
-// Simple animated sphere
-function AnimatedSphere({
-  position,
-  color,
-  scale = 1,
-}: {
-  position: [number, number, number];
-  color: string;
-  scale?: number;
-}) {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.position.y =
-        position[1] + Math.sin(state.clock.elapsedTime * 0.5) * 0.15;
-    }
-  });
-
-  return (
-    <Float speed={1} rotationIntensity={0.2} floatIntensity={0.3}>
-      <mesh ref={meshRef} position={position} scale={scale}>
-        <sphereGeometry args={[0.5, 16, 16]} />
-        <meshStandardMaterial
-          color={color}
-          transparent
-          opacity={0.7}
-          roughness={0.2}
-          metalness={0.1}
-        />
-      </mesh>
-    </Float>
-  );
-}
-
-// Minimal scene with few objects
-function Scene() {
-  return (
-    <>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[10, 10, 10]} intensity={0.6} />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#5eead4" />
-
-      {/* Just 3 simple objects */}
-      <AnimatedCube position={[-2.5, 1, -1]} color="#5eead4" scale={0.8} />
-      <AnimatedSphere position={[2.5, -0.5, -1]} color="#2dd4bf" scale={0.9} />
-      <AnimatedCube position={[0, -1.5, -2]} color="#14b8a6" scale={0.6} />
-    </>
-  );
-}
-
-// Fallback gradient background (CSS-only, no WebGL)
-function GradientFallback() {
-  return (
-    <div className="absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-      <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-teal-500/10 blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl" />
-    </div>
+    <div
+      className={`absolute rounded-2xl opacity-20 ${className}`}
+      style={{
+        animation: `float ${6 + delay}s ease-in-out infinite`,
+        animationDelay: `${delay}s`,
+      }}
+    />
   );
 }
 
 export function HeroScene() {
   const [mounted, setMounted] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [shouldRender3D, setShouldRender3D] = useState(true);
 
   useEffect(() => {
-    // Check if we should even try to render 3D
-    // Skip on low-end devices or if WebGL is not available
-    try {
-      const canvas = document.createElement("canvas");
-      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-      if (!gl) {
-        setShouldRender3D(false);
-      }
-    } catch {
-      setShouldRender3D(false);
-    }
     setMounted(true);
   }, []);
 
-  // Show fallback if not mounted, has error, or can't render 3D
-  if (!mounted || hasError || !shouldRender3D) {
-    return <GradientFallback />;
+  if (!mounted) {
+    return (
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+    );
   }
 
   return (
-    <div className="absolute inset-0 -z-10">
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{
-          antialias: false,
-          alpha: true,
-          powerPreference: "low-power",
-          failIfMajorPerformanceCaveat: true,
-          preserveDrawingBuffer: false,
+    <div className="absolute inset-0 -z-10 overflow-hidden">
+      {/* Base gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+
+      {/* Animated glow effects */}
+      <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl animate-pulse" />
+      <div
+        className="absolute bottom-1/3 right-1/4 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl animate-pulse"
+        style={{ animationDelay: "1s" }}
+      />
+      <div
+        className="absolute top-1/2 right-1/3 h-64 w-64 rounded-full bg-emerald-500/5 blur-3xl animate-pulse"
+        style={{ animationDelay: "2s" }}
+      />
+
+      {/* Floating shapes */}
+      <AnimatedShape
+        className="top-[15%] left-[10%] h-16 w-16 rotate-12 bg-gradient-to-br from-teal-400/30 to-cyan-400/20"
+        delay={0}
+      />
+      <AnimatedShape
+        className="top-[25%] right-[15%] h-20 w-20 -rotate-6 bg-gradient-to-br from-cyan-400/25 to-teal-400/15"
+        delay={1}
+      />
+      <AnimatedShape
+        className="bottom-[30%] left-[20%] h-12 w-12 rotate-45 bg-gradient-to-br from-emerald-400/20 to-teal-400/10"
+        delay={2}
+      />
+      <AnimatedShape
+        className="bottom-[20%] right-[25%] h-14 w-14 -rotate-12 bg-gradient-to-br from-teal-400/25 to-emerald-400/15"
+        delay={0.5}
+      />
+      <AnimatedShape
+        className="top-[40%] left-[35%] h-10 w-10 rotate-6 bg-gradient-to-br from-cyan-400/20 to-teal-400/10"
+        delay={1.5}
+      />
+
+      {/* Grid pattern overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(94, 234, 212, 0.3) 1px, transparent 1px),
+                           linear-gradient(90deg, rgba(94, 234, 212, 0.3) 1px, transparent 1px)`,
+          backgroundSize: "60px 60px",
         }}
-        dpr={1}
-        frameloop="always"
-        onCreated={({ gl }) => {
-          gl.setClearColor(0x000000, 0);
-          
-          // Handle context loss
-          const canvas = gl.domElement;
-          canvas.addEventListener("webglcontextlost", (e) => {
-            e.preventDefault();
-            setHasError(true);
-          });
-        }}
-        onError={() => setHasError(true)}
-      >
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
-      </Canvas>
+      />
+
+      {/* CSS animation keyframes */}
+      <style jsx>{`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0) rotate(var(--rotation, 0deg));
+          }
+          50% {
+            transform: translateY(-20px) rotate(var(--rotation, 0deg));
+          }
+        }
+      `}</style>
     </div>
   );
 }
